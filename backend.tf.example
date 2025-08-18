@@ -1,0 +1,76 @@
+# Backend configuration for Terraform state management
+# 
+# This file provides an example backend configuration for storing Terraform state
+# in AWS S3 with DynamoDB for state locking. This ensures state consistency and
+# enables team collaboration.
+#
+# SETUP INSTRUCTIONS:
+# 1. Create an S3 bucket for storing Terraform state
+# 2. Create a DynamoDB table for state locking with primary key "LockID" (String)
+# 3. Copy this file to backend.tf and update the values below
+# 4. Run 'terraform init' to initialize the backend
+#
+# SECURITY CONSIDERATIONS:
+# - Enable versioning on the S3 bucket
+# - Enable server-side encryption on the S3 bucket
+# - Restrict access to the S3 bucket and DynamoDB table
+# - Use IAM policies to control who can access the state
+
+terraform {
+  backend "s3" {
+    # S3 bucket name for storing Terraform state
+    # This bucket must be created before running terraform init
+    bucket = "your-terraform-state-bucket-name"
+    
+    # Path within the bucket where the state file will be stored
+    # Use a descriptive path that includes environment/project info
+    key = "stock-analytics/dev/terraform.tfstate"
+    
+    # AWS region where the S3 bucket is located
+    region = "us-east-1"
+    
+    # Enable server-side encryption for the state file
+    encrypt = true
+    
+    # DynamoDB table for state locking to prevent concurrent modifications
+    # Table must have a primary key named "LockID" with type String
+    dynamodb_table = "terraform-state-lock"
+    
+    # Optional: Specify a profile if using AWS CLI profiles
+    # profile = "your-aws-profile"
+    
+    # Optional: Specify a role ARN if using cross-account access
+    # role_arn = "arn:aws:iam::ACCOUNT-ID:role/TerraformRole"
+  }
+}
+
+# Alternative backend configurations for different environments:
+
+# For staging environment:
+# terraform {
+#   backend "s3" {
+#     bucket         = "your-terraform-state-bucket-name"
+#     key            = "stock-analytics/staging/terraform.tfstate"
+#     region         = "us-east-1"
+#     encrypt        = true
+#     dynamodb_table = "terraform-state-lock"
+#   }
+# }
+
+# For production environment:
+# terraform {
+#   backend "s3" {
+#     bucket         = "your-terraform-state-bucket-name"
+#     key            = "stock-analytics/prod/terraform.tfstate"
+#     region         = "us-east-1"
+#     encrypt        = true
+#     dynamodb_table = "terraform-state-lock"
+#   }
+# }
+
+# Local backend (for development/testing only):
+# terraform {
+#   backend "local" {
+#     path = "terraform.tfstate"
+#   }
+# }
