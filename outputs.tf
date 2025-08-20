@@ -90,3 +90,19 @@ output "project_name" {
   description = "Project name"
   value       = "stock-analytics"
 }
+
+# Glue Catalog Outputs
+output "glue_database_name" {
+  description = "Name of the Glue Catalog database"
+  value       = module.glue_catalog.database_name
+}
+
+output "glue_table_name" {
+  description = "Name of the Glue Catalog table"
+  value       = module.glue_catalog.table_name
+}
+
+output "athena_sample_query" {
+  description = "Sample Athena query to get started"
+  value       = module.glue_catalog.sample_athena_query
+}

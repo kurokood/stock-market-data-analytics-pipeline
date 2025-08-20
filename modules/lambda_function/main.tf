@@ -17,8 +17,7 @@ resource "aws_lambda_function" "this" {
 }
 
 resource "aws_lambda_event_source_mapping" "kinesis" {
-
-  event_source_arn                   = var.kinesis_stream_arn
+  event_source_arn                   = coalesce(var.event_source_arn, var.kinesis_stream_arn)
   function_name                      = aws_lambda_function.this.arn
   starting_position                  = var.starting_position
   batch_size                         = var.batch_size

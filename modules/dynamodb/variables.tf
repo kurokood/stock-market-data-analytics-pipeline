@@ -9,7 +9,6 @@
 variable "table_name" {
   description = "Name of the DynamoDB table for storing processed stock market data. Must be unique within the AWS account and region. Used by Lambda function for data storage."
   type        = string
-  default     = "stock-market-data"
 
   validation {
     condition = can(regex("^[a-zA-Z0-9_.-]+$", var.table_name)) && length(var.table_name) >= 3 && length(var.table_name) <= 255

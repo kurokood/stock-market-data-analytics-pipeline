@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
+  force_destroy = true
 
   tags = var.tags
 }
@@ -33,7 +34,7 @@ resource "aws_s3_bucket_public_access_block" "this" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
-  count  = var.lifecycle_rules != null ? 1 : 0
+  count  = length(var.lifecycle_rules) > 0 ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   dynamic "rule" {

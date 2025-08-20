@@ -18,26 +18,8 @@ resource "aws_iam_role" "lambda_role" {
   tags = var.tags
 }
 
-# Attach AmazonKinesisFullAccess managed policy
-resource "aws_iam_role_policy_attachment" "kinesis_full_access" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonKinesisFullAccess"
-}
-
-# Attach AmazonDynamoDBFullAccess managed policy
-resource "aws_iam_role_policy_attachment" "dynamodb_full_access" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
-}
-
-# Attach AWSLambdaBasicExecutionRole managed policy
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-# Attach AmazonS3FullAccess managed policy
-resource "aws_iam_role_policy_attachment" "s3_full_access" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+resource "aws_iam_role_policy_attachment" "managed" {
+  for_each  = toset(var.managed_policy_arns)
+  role      = aws_iam_role.lambda_role.name
+  policy_arn = each.value
 }

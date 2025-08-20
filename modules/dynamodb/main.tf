@@ -21,12 +21,12 @@ resource "aws_dynamodb_table" "stock_market_data" {
   }
 
   server_side_encryption {
-    enabled      = var.encryption_enabled
-    kms_key_arn  = var.kms_key_id
+    enabled     = var.encryption_enabled
+    kms_key_arn = var.kms_key_id
   }
 
-  stream_enabled   = var.stream_enabled
-  stream_view_type = var.stream_enabled ? var.stream_view_type : null
+  stream_enabled   = true
+  stream_view_type = "NEW_IMAGE"
 
   tags = var.tags
 }

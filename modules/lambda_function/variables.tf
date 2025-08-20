@@ -163,6 +163,18 @@ variable "kinesis_stream_arn" {
   }
 }
 
+# Generic event source ARN that can be either a Kinesis stream ARN or a DynamoDB stream ARN
+variable "event_source_arn" {
+  description = "Generic event source ARN for Lambda event source mapping. Supports Kinesis stream ARN or DynamoDB stream ARN."
+  type        = string
+  default     = null
+
+  validation {
+    condition = var.event_source_arn == null || can(regex("^arn:aws:(kinesis:[a-z0-9-]+:[0-9]{12}:stream/.+|dynamodb:[a-z0-9-]+:[0-9]{12}:table/.+/stream/.+)$", var.event_source_arn))
+    error_message = "Event source ARN must be a valid Kinesis stream ARN or DynamoDB stream ARN."
+  }
+}
+
 variable "starting_position" {
   description = "Position in the stream where Lambda starts reading. LATEST starts from newest records, TRIM_HORIZON starts from oldest available records."
   type        = string
