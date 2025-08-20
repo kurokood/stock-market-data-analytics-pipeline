@@ -4,12 +4,18 @@ A simplified Terraform infrastructure for real-time stock market data processing
 
 ## Architecture
 
-- **Kinesis Data Stream** - Real-time data ingestion
-- **Lambda Function** - Data processing 
-- **DynamoDB** - Processed data storage with streams
-- **S3 Bucket** - Data archival and analytics
-- **Glue Catalog** - Data catalog for Athena queries
-- **IAM Role** - Service permissions
+- **Kinesis Data Stream** – Real-time data ingestion
+- **Lambda Functions** –
+  - `ConsumerStockData`: processes Kinesis records, archives to S3, writes to DynamoDB
+  - `StockTrendAnalysis`: triggered by DynamoDB Streams for trend analysis and alerts
+- **DynamoDB** – `stock-market-data` table with streams enabled
+- **S3 Buckets** –
+  - `stock-market-data-bucket-121485`: raw/archive storage for Kinesis payloads
+  - `athena-query-results-121485`: results location for Athena query outputs
+- **Glue Catalog** – Database and table definitions for querying S3 data with Athena
+- **SNS** – `stock-trend-alerts` topic with email subscription for alerts
+- **IAM Roles** – Execution roles for Lambdas
+- **Local Producer Script** – Sends stock data to Kinesis using yfinance or mock data
 
 ## Quick Start
 
@@ -33,18 +39,20 @@ terraform plan
 terraform apply
 ```
 
+Confirm the email subscription sent by Amazon SNS to activate alerts.
+
 ### Configuration
 
 All values are hardcoded in `main.tf` for simplicity:
 
 - **Region**: us-east-1
 - **Environment**: dev
-- **Kinesis Stream**: stock-market-stream (1 shard)
-- **DynamoDB Table**: stock-market-data (pay-per-request, streams enabled)
-- **S3 Bucket**: stock-market-data-bucket-121485
-- **Lambda Function**: ConsumerStockData (Python 3.13)
-- **Glue Database**: stock_data_db
-- **Glue Table**: stock_data_table (for Athena queries)
+- **Kinesis Stream**: `stock-market-stream` (1 shard)
+- **DynamoDB Table**: `stock-market-data` (on-demand, streams enabled)
+- **S3 Buckets**: `stock-market-data-bucket-121485`, `athena-query-results-121485`
+- **Lambda Functions**: `ConsumerStockData`, `StockTrendAnalysis` (Python 3.13)
+- **Glue Catalog**: Database `stock_data_db`, Table `stock_data_table`
+- **SNS Topic**: `stock-trend-alerts` with email subscription
 
 ## Code Quality
 
@@ -66,17 +74,23 @@ This will automatically run on every commit:
 ## Project Structure
 
 ```
-├── main.tf                    # Main infrastructure configuration
-├── outputs.tf                 # Resource outputs
-├── lambda_function.py         # Lambda function code
-├── lambda_function.zip        # Lambda deployment package
-└── modules/                   # Terraform modules
+├── main.tf                                      # Main infrastructure configuration
+├── outputs.tf                                   # Resource outputs
+├── producer_data_function.py                    # Local producer to send data to Kinesis
+└── modules/                                     # Terraform modules
     ├── kinesis/
     ├── dynamodb/
     ├── s3_bucket/
     ├── iam_role/
     ├── lambda_function/
-    └── glue_catalog/
+    │   ├── lambda_consumer/
+    │   │   ├── lambda_function.py
+    │   │   └── lambda_function.zip
+    │   └── lambda_trend/
+    │       ├── lambda_function.py
+    │       └── lambda_function.zip
+    ├── glue_catalog/
+    └── sns/
 ```
 
 ## Deployment Commands
@@ -99,9 +113,21 @@ To modify the configuration, edit the hardcoded values in `main.tf`:
 - Adjust Lambda memory, timeout, or batch size
 - Update S3 bucket name (must be globally unique)
 
+### Producer script
+- Set stream name dynamically via environment variable (fallback is `stock-market-stream`):
+  - PowerShell: `$env:KINESIS_STREAM_NAME="your-stream"; python .\producer_data_function.py`
+  - Bash: `KINESIS_STREAM_NAME=your-stream python producer_data_function.py`
+
+### Lambda environment variables
+- Consumer: `DYNAMODB_TABLE_NAME`, `S3_BUCKET_NAME`
+- Trend: `DYNAMODB_TABLE_NAME`, `SNS_TOPIC_ARN`
+
+### S3 bucket destroy behavior
+- Buckets are configured with `force_destroy = true` so `terraform destroy` will delete non-empty buckets (including object versions). If you enabled this after initial creation, run `terraform apply` first to update the buckets, then `terraform destroy`.
+
 ## Querying Data with Athena
 
-After deploying the infrastructure, you can query the stock data using Amazon Athena:
+This project uses Amazon Athena to query data defined in the AWS Glue Catalog. Athena itself is a query service and is not provisioned via Terraform in this project. After deploying the infrastructure and ingesting data, you can run queries in the Athena console against the Glue database/table created by Terraform.
 
 ### Sample Queries
 
