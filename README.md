@@ -180,4 +180,4 @@ The infrastructure is designed to be simple and self-documenting. Use standard T
 ###  Author: Mon Villarin
  📌 LinkedIn: [Ramon Villarin](https://www.linkedin.com/in/ramon-villarin/)  
  📌 Portfolio Site: [MonVillarin.com](https://monvillarin.com)  
- 📌 Blog Post: [Real-Time Stock Market Data Analytics Pipeline on AWS with Terraform]([https://blog.monvillarin.com/serverless-approach-with-aws-cicd-transforming-operations-and-reducing-costs](https://blog.monvillarin.com/real-time-stock-market-data-analytics-pipeline-on-aws-with-terraform))
+ 📌 Blog Post: [Real-Time Stock Market Data Analytics Pipeline on AWS with Terraform]([https://blog.monvillarin.com/real-time-stock-market-data-analytics-pipeline-on-aws-with-terraform])
